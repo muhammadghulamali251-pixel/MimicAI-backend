@@ -10,7 +10,7 @@ const app = express ()
 // Middlewares
 app.use(express.json())
 app.use(cors({
-    origin: 'https://mimic-ai.netlify.app',
+    origin: 'https://mimic-ai-neon.vercel.app',
     credentials: true
 }))
 
