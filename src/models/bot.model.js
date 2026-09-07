@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const botSchema = new mongoose.Schema({
-    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true, index: true },
     botName: { type: String, required: true },
     systemPrompt: { type: String, required: true }, 
     slug: { type: String, required: true, unique: true },
