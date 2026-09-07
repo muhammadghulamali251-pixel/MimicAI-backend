@@ -8,6 +8,7 @@ const router = express.Router()
 router.post('/', authMiddleware, botControllers.createBot)
 router.get('/', authMiddleware, botControllers.getMyBot)
 router.put('/', authMiddleware, botControllers.editBot)
+router.get('/info/:slug', botControllers.getBotInfo)
 
 
 module.exports = router

@@ -89,4 +89,25 @@ const editBot = async (req, res) => {
     }
 }
 
-module.exports = { createBot, getMyBot, editBot }
+const getBotInfo = async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        const bot = await botModel.findOne({ slug, isActive: true }).populate('ownerId', 'username')
+
+        if (!bot) {
+            return res.status(404).json({ message: "Bot not found." })
+        }
+
+        return res.status(200).json({
+            botName: bot.botName,
+            ownerName: bot.ownerId.username
+        })
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Something went wrong." })
+    }
+}
+
+module.exports = { createBot, getMyBot, editBot, getBotInfo }
