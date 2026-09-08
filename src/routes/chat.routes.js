@@ -4,7 +4,7 @@ const chatControllers = require('../controllers/chatbot.controller.js')
 const rateLimit = require('express-rate-limit')
 
 
-// RATE LIMIT
+// Per-IP limit — stops one visitor from hammering any bot
 const chatLimiter = rateLimit({
     windowMs: 60 * 1000,  // 1 minute
     max: 10,              // max 10 requests per IP per window
@@ -12,6 +12,14 @@ const chatLimiter = rateLimit({
 })
 
 
-router.post('/:slug', chatLimiter, chatControllers.addPrompt)
+// Per-bot limit — caps total load on a single popular bot regardless of IP
+const botLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60, // total requests per bot per minute, tune to your OpenRouter quota
+    keyGenerator: (req) => req.params.slug,
+    message: { message: "This bot is getting a lot of traffic right now. Try again shortly." }
+})
+
+router.post('/:slug', chatLimiter, botLimiter, chatControllers.addPrompt)
 
 module.exports = router
