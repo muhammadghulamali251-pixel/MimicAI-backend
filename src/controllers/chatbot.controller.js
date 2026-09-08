@@ -6,27 +6,31 @@ dotenv.config();
 
 
 const generateResponse = async (messages) => {
-    try {
-        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type" : "application/json",
-                "Authorization" : `Bearer ${process.env.OPENROUTER_API_KEY}`
-            },
-            body: JSON.stringify({
-                model : "openai/gpt-4o-mini",
-                messages 
-            })
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`
+        },
+        body: JSON.stringify({
+            model: "openai/gpt-4o-mini",
+            messages
         })
-        if (!response.ok) {
-            throw new Error("Failed to generate response");
-        }
-        const result = await response.json();
-        return result.choices[0].message.content;
+    });
 
-    } catch (err) {
-       return { error: err.message };
+    if (response.status === 429) {
+        const err = new Error("rate_limited");
+        err.code = "RATE_LIMITED";
+        throw err;
     }
+    if (!response.ok) {
+        const err = new Error("upstream_error");
+        err.code = "UPSTREAM_ERROR";
+        throw err;
+    }
+
+    const result = await response.json();
+    return result.choices[0].message.content;
 }
 
 const addPrompt = async (req, res) => {
@@ -54,6 +58,9 @@ const addPrompt = async (req, res) => {
 
     } catch (err) {
         console.log(err);
+        if (err.code === "RATE_LIMITED") {
+            return res.status(503).json({ message: "This bot is getting a lot of traffic right now. Try again in a minute." });
+        }
         res.status(500).json({ message: "Something went wrong." });
     }
 }
